@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur de Tarif</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin: 15px 0 5px;
+        }
+        select, input[type="checkbox"], button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Simulateur de Tarif</h1>
+
+    <label for="typeReservation">Type de Réservation</label>
+    <select id="typeReservation">
+        <option value="reguliere">Régulière</option>
+        <option value="ponctuelle">Ponctuelle</option>
+    </select>
+   
+    <label for="secteur">Secteur</label>
+    <select id="secteur">
+        <option value="Paris">Paris</option>
+        <option value="Hors Paris">Hors Paris</option>
+    </select>
+   
+    <label for="dureeReservation">Durée de Réservation (par semaine)</label>
+    <select id="dureeReservation">
+        <!-- Options générées automatiquement par JavaScript -->
+    </select>
+   
+    <div id="engagementSection">
+        <label for="engagement">Avec Engagement ?</label>
+        <input type="checkbox" id="engagement">
+    </div>
+   
+    <div id="materielEtProduitSection">
+        <label for="materielEtProduit">Avec Matériel et Produit ?</label>
+        <input type="checkbox" id="materielEtProduit">
+    </div>
+   
+    <button onclick="calculerTarif()">Calculer le Tarif</button>
+   
+    <div class="result" id="resultat"></div>
+</div>
+
+<script>
+    // Génération dynamique des options de durée
+    const dureeReservationSelect = document.getElementById("dureeReservation");
+    const heuresInitiales = 1.5; // Durée initiale en heures par semaine
+    const heuresParSemaineMax = 75;
+
+    for (let heuresParSemaine = heuresInitiales; heuresParSemaine <= heuresParSemaineMax; heuresParSemaine += heuresParSemaine === 1.5 ? 0.5 : 1) {
+        const heuresParMois = Math.round(heuresParSemaine * 4); // Conversion en heures par mois
+        const option = new Option(`${heuresParSemaine} h/semaine (${heuresParMois} h/mois)`, heuresParMois);
+        dureeReservationSelect.appendChild(option);
+    }
+
+    // Gestion de l'affichage des options selon le type de réservation
+    const typeReservationSelect = document.getElementById("typeReservation");
+    typeReservationSelect.addEventListener("change", () => {
+        const type = typeReservationSelect.value;
+        const engagementSection = document.getElementById("engagementSection");
+        const materielEtProduitSection = document.getElementById("materielEtProduitSection");
+
+        if (type === "ponctuelle") {
+            engagementSection.style.display = "none";
+            materielEtProduitSection.style.display = "block";
+        } else {
+            engagementSection.style.display = "block";
+            materielEtProduitSection.style.display = "block";
+        }
+    });
+
+    // Fonction pour calculer le tarif
+    function calculerTarif() {
+        const typeReservation = document.getElementById("typeReservation").value;
+        const secteur = document.getElementById("secteur").value;
+        const dureeReservation = parseInt(document.getElementById("dureeReservation").value, 10); // Durée en heures par mois
+        const engagement = document.getElementById("engagement").checked;
+        const materielEtProduit = document.getElementById("materielEtProduit").checked;
+
+        let tarifHoraire = null;
+        let tarifFixe = 0;
+
+        // Vérifier la compatibilité du matériel et produit hors Paris
+        if (secteur === "Hors Paris" && materielEtProduit) {
+            document.getElementById("resultat").innerText = "Le matériel et produit ne sont pas disponibles pour le secteur Hors Paris.";
+            return;
+        }
+
+        if (typeReservation === "ponctuelle") {
+            if (engagement) {
+                document.getElementById("resultat").innerText = "L'engagement n'est pas possible pour une réservation ponctuelle.";
+                return;
+            }
+            tarifHoraire = dureeReservation <= 20 ? 30 : 25;
+            if (materielEtProduit && secteur === "Paris") {
+                tarifFixe = 149;
+            }
+        } else if (typeReservation === "reguliere") {
+            if (secteur === "Paris") {
+                if (engagement) {
+                    tarifHoraire = materielEtProduit ? 24 : 22;
+                } else {
+                    tarifHoraire = 25;
+                }
+            } else if (secteur === "Hors Paris") {
+                tarifHoraire = 25;
+            }
+        }
+
+        const tarifMensuel = tarifHoraire ? (tarifHoraire * dureeReservation).toFixed(2) : null;
+
+        const resultat = tarifHoraire
+            ? `Durée totale : ${dureeReservation} h/mois. Tarif horaire : ${tarifHoraire} €/h.
+               ${tarifFixe > 0 ? "Tarif fixe supplémentaire : 149 € (non ajouté au total mensuel)." : ""}
+               Coût mensuel total : ${tarifMensuel} €.`.replace(/\s+/g, " ")
+            : "Option non disponible pour les critères sélectionnés.";
+
+        document.getElementById("resultat").innerText = resultat;
+    }
+</script>
+
+</body>
+</html>
