@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulateur de Tarif</title>
+    <title>Ma Simulation</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: "Century Gothic", sans-serif;
             margin: 20px;
             padding: 0;
             background-color: #f7f7f7;
@@ -14,49 +14,73 @@
         .container {
             max-width: 600px;
             margin: 0 auto;
-            background: #fff;
+            background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         h1 {
             text-align: center;
-            color: #333;
+            color: #2b7392;
         }
         label {
             font-weight: bold;
             display: block;
-            margin: 15px 0 5px;
+            margin: 10px 0 5px;
+            color: #2b7392;
         }
-        select, input[type="checkbox"], button {
+        select, input, button {
             width: 100%;
             padding: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             border: 1px solid #ccc;
             border-radius: 5px;
+            font-family: "Century Gothic", sans-serif;
         }
         button {
-            background-color: #28a745;
+            background-color: #14def5;
             color: white;
             font-size: 16px;
             cursor: pointer;
+            border: none;
         }
         button:hover {
-            background-color: #218838;
+            background-color: #2b7392;
         }
         .result {
             text-align: center;
             font-size: 18px;
             font-weight: bold;
             margin-top: 20px;
+            color: #2b7392;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Simulateur de Tarif</h1>
+    <h1>Ma Simulation</h1>
 
+    <!-- Formulaire d'informations -->
+    <label for="nom">Nom</label>
+    <input type="text" id="nom" required>
+
+    <label for="prenom">Prénom</label>
+    <input type="text" id="prenom" required>
+
+    <label for="email">Email</label>
+    <input type="email" id="email" required>
+
+    <label for="telephone">Téléphone</label>
+    <input type="tel" id="telephone" required>
+
+    <label for="entreprise">Nom de l'entreprise</label>
+    <input type="text" id="entreprise" required>
+
+    <label for="superficie">Superficie en m²</label>
+    <input type="number" id="superficie" required>
+
+    <!-- Sélection du type de réservation -->
     <label for="typeReservation">Type de Réservation</label>
     <select id="typeReservation">
         <option value="reguliere">Régulière</option>
@@ -68,12 +92,10 @@
         <option value="Paris">Paris</option>
         <option value="Hors Paris">Hors Paris</option>
     </select>
-   
-    <label for="dureeReservation">Durée de Réservation (par semaine)</label>
-    <select id="dureeReservation">
-        <!-- Options générées automatiquement par JavaScript -->
-    </select>
-   
+
+    <label for="dureeReservation">Durée de Réservation</label>
+    <select id="dureeReservation"></select>
+
     <div id="engagementSection">
         <label for="engagement">Avec Engagement ?</label>
         <input type="checkbox" id="engagement">
@@ -83,8 +105,9 @@
         <label for="materielEtProduit">Avec Matériel et Produit ?</label>
         <input type="checkbox" id="materielEtProduit">
     </div>
-   
-    <button onclick="calculerTarif()">Calculer le Tarif</button>
+
+    <button onclick="calculerTarif()">Je fais ma demande</button>
+
    
     <div class="result" id="resultat"></div>
 </div>
@@ -92,76 +115,75 @@
 <script>
     // Génération dynamique des options de durée
     const dureeReservationSelect = document.getElementById("dureeReservation");
-    const heuresInitiales = 1.5; // Durée initiale en heures par semaine
-    const heuresParSemaineMax = 75;
+    function genererOptions() {
+        dureeReservationSelect.innerHTML = "";
+        const typeReservation = document.getElementById("typeReservation").value;
 
-    for (let heuresParSemaine = heuresInitiales; heuresParSemaine <= heuresParSemaineMax; heuresParSemaine += heuresParSemaine === 1.5 ? 0.5 : 1) {
-        const heuresParMois = Math.round(heuresParSemaine * 4); // Conversion en heures par mois
-        const option = new Option(`${heuresParSemaine} h/semaine (${heuresParMois} h/mois)`, heuresParMois);
-        dureeReservationSelect.appendChild(option);
-    }
-
-    // Gestion de l'affichage des options selon le type de réservation
-    const typeReservationSelect = document.getElementById("typeReservation");
-    typeReservationSelect.addEventListener("change", () => {
-        const type = typeReservationSelect.value;
-        const engagementSection = document.getElementById("engagementSection");
-        const materielEtProduitSection = document.getElementById("materielEtProduitSection");
-
-        if (type === "ponctuelle") {
-            engagementSection.style.display = "none";
-            materielEtProduitSection.style.display = "block";
+        if (typeReservation === "ponctuelle") {
+            for (let heures = 1; heures <= 75; heures++) {
+                const option = new Option(`${heures} h`, heures);
+                dureeReservationSelect.appendChild(option);
+            }
         } else {
-            engagementSection.style.display = "block";
-            materielEtProduitSection.style.display = "block";
+            for (let heuresParSemaine = 1.5; heuresParSemaine <= 75; heuresParSemaine += heuresParSemaine === 1.5 ? 0.5 : 1) {
+                const heuresParMois = Math.round(heuresParSemaine * 4);
+                const option = new Option(`${heuresParSemaine} h/semaine (${heuresParMois} h/mois)`, heuresParMois);
+                dureeReservationSelect.appendChild(option);
+            }
         }
+    }
+    document.getElementById("typeReservation").addEventListener("change", () => {
+        const type = document.getElementById("typeReservation").value;
+        document.getElementById("engagementSection").style.display = type === "ponctuelle" ? "none" : "block";
+        genererOptions();
     });
+    genererOptions();
 
-    // Fonction pour calculer le tarif
     function calculerTarif() {
         const typeReservation = document.getElementById("typeReservation").value;
         const secteur = document.getElementById("secteur").value;
-        const dureeReservation = parseInt(document.getElementById("dureeReservation").value, 10); // Durée en heures par mois
+        const dureeReservation = parseInt(document.getElementById("dureeReservation").value, 10);
         const engagement = document.getElementById("engagement").checked;
         const materielEtProduit = document.getElementById("materielEtProduit").checked;
+        const nom = document.getElementById("nom").value;
+        const prenom = document.getElementById("prenom").value;
+        const email = document.getElementById("email").value;
+        const telephone = document.getElementById("telephone").value;
+        const entreprise = document.getElementById("entreprise").value;
+        const superficie = document.getElementById("superficie").value;
 
-        let tarifHoraire = null;
-        let tarifFixe = 0;
+        if (!nom || !prenom || !email || !telephone || !entreprise || !superficie) {
+            document.getElementById("resultat").innerText = "Veuillez remplir tous les champs avant de calculer.";
+            return;
+        }
 
-        // Vérifier la compatibilité du matériel et produit hors Paris
         if (secteur === "Hors Paris" && materielEtProduit) {
             document.getElementById("resultat").innerText = "Le matériel et produit ne sont pas disponibles pour le secteur Hors Paris.";
             return;
         }
 
+        let tarifHoraire = null;
+        let tarifFixe = 0;
+
         if (typeReservation === "ponctuelle") {
-            if (engagement) {
-                document.getElementById("resultat").innerText = "L'engagement n'est pas possible pour une réservation ponctuelle.";
-                return;
-            }
             tarifHoraire = dureeReservation <= 20 ? 30 : 25;
             if (materielEtProduit && secteur === "Paris") {
                 tarifFixe = 149;
             }
-        } else if (typeReservation === "reguliere") {
+        } else {
             if (secteur === "Paris") {
-                if (engagement) {
-                    tarifHoraire = materielEtProduit ? 24 : 22;
-                } else {
-                    tarifHoraire = 25;
-                }
-            } else if (secteur === "Hors Paris") {
+                tarifHoraire = engagement ? (materielEtProduit ? 24 : 22) : 25;
+            } else {
                 tarifHoraire = 25;
             }
         }
 
         const tarifMensuel = tarifHoraire ? (tarifHoraire * dureeReservation).toFixed(2) : null;
-
         const resultat = tarifHoraire
-            ? `Durée totale : ${dureeReservation} h/mois. Tarif horaire : ${tarifHoraire} €/h.
-               ${tarifFixe > 0 ? "Tarif fixe supplémentaire : 149 € (non ajouté au total mensuel)." : ""}
+            ? `Tarif horaire : ${tarifHoraire} €/h.
+               ${tarifFixe > 0 ? "Tarif fixe de 149 € (location matériel & produits)." : ""}
                Coût mensuel total : ${tarifMensuel} €.`.replace(/\s+/g, " ")
-            : "Option non disponible pour les critères sélectionnés.";
+            : "Option non disponible.";
 
         document.getElementById("resultat").innerText = resultat;
     }
