@@ -23,6 +23,23 @@
             text-align: center;
             color: #2b7392;
         }
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            background-color: #2b7392;
+            padding: 10px;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+        }
+        .step {
+            text-align: center;
+            flex-grow: 1;
+        }
+        .step span {
+            font-weight: bold;
+        }
         label {
             font-weight: bold;
             display: block;
@@ -54,9 +71,32 @@
             margin-top: 20px;
             color: #2b7392;
         }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #2b7392;
+        }
     </style>
 </head>
 <body>
+
+<!-- Phase d'accroche -->
+<div class="steps-container">
+    <div class="step">
+        <span>1</span> Je réalise ma demande en ligne
+    </div>
+    <div class="step">
+        <span>2</span> Je suis contacté dans l’heure et je reçois mon devis personnalisé
+    </div>
+    <div class="step">
+        <span>3</span> Je signe mon contrat (avec ou sans engagement)
+    </div>
+    <div class="step">
+        <span>4</span> Je reçois mes informations de connexion. Mon espace en ligne me permet de suivre mes réservations, ma facturation et communiquer avec mon futur aide-ménager
+    </div>
+</div>
 
 <div class="container">
     <h1>Ma Simulation</h1>
@@ -107,9 +147,12 @@
     </div>
 
     <button onclick="calculerTarif()">Je fais ma demande</button>
-
    
     <div class="result" id="resultat"></div>
+</div>
+
+<div class="footer">
+    Je profite de la prestation en toute sérénité.
 </div>
 
 <script>
